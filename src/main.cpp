@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include <Servo.h>
 #include <Configuration.h>
+#include <math.h>
+// #include <Kinematics.cpp>
 
 Servo left;
 Servo right;
@@ -17,20 +19,28 @@ struct coord Coord(float _1, float _2){
 }
 
 struct coord get_angles(coord x){
-  //pythag to get len from motor pivot to end effector
-  struct coord d = {sqrt(sq(x._2) + sq(((MOTOR_DISTANCE/2) + x._1))),
-                    sqrt(sq(x._2) + sq((MOTOR_DISTANCE/2) - x._1))};
+//  //pythag to get len from motor pivot to end effector
+//  struct coord d = {sqrt(sq(x._2) + sq(((MOTOR_DISTANCE/2) + x._1))),
+//                    sqrt(sq(x._2) + sq((MOTOR_DISTANCE/2) - x._1))};
+//
+//  //law of cosines to get angle from above to motor arm
+//  struct coord a = {acos((sq(FLOATING_ARM_LEN) - sq(MOTOR_ARM_LEN) - sq(d._1))/(2*MOTOR_ARM_LEN*d._1)),
+//                    acos((sq(FLOATING_ARM_LEN) - sq(MOTOR_ARM_LEN) - sq(d._2))/(2*MOTOR_ARM_LEN*d._2))};
+//
+//  //arctan to get angle from horiz to line referenced above
+//  struct coord b = {acos(d._1/((MOTOR_DISTANCE/2) + x._1)),
+//                    acos(d._2/((MOTOR_DISTANCE/2) - x._1))};
+//
+//  //add angles together now and return them
+//  return Coord(a._1+b._1, a._2+b._2);
 
-  //law of cosines to get angle from above to motor arm
-  struct coord a = {acos((sq(FLOATING_ARM_LEN) - sq(MOTOR_ARM_LEN) - sq(d._1))/(2*MOTOR_ARM_LEN*d._1)),
-                    acos((sq(FLOATING_ARM_LEN) - sq(MOTOR_ARM_LEN) - sq(d._2))/(2*MOTOR_ARM_LEN*d._2))};
+    float c = sqrt(pow(x._1, 2) + pow(x._2, 2));
+    float d = sqrt(pow(MOTOR_DISTANCE - x._1, 2) + pow(x._2, 2));
 
-  //arctan to get angle from horiz to line referenced above
-  struct coord b = {acos(d._1/((MOTOR_DISTANCE/2) + x._1)),
-                    acos(d._2/((MOTOR_DISTANCE/2) - x._1))};
+    float theta1 = atan2(x._2, x._1) + acos((0 - pow(FLOATING_ARM_LEN, 2) + pow(MOTOR_ARM_LEN, 2) + pow(c, 2)) / (2 * MOTOR_ARM_LEN * c));
+    float theta2 = M_PI - atan2(x._2, MOTOR_DISTANCE - x._1) - acos((0 - pow(FLOATING_ARM_LEN, 2) + pow(MOTOR_ARM_LEN, 2) + pow(d, 2)) / (2 * MOTOR_ARM_LEN * d));
 
-  //add angles together now and return them
-  return Coord(a._1+b._1, a._2+b._2);
+    return Coord(theta1, theta2);
 }
 
 //abs(5); ((5)>0?(5):-(5))
