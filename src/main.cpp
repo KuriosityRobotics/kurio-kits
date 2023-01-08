@@ -1,7 +1,6 @@
 #include <Arduino.h>
 #include <Servo.h>
 #include <Configuration.h>
-// #include <Kinematics.cpp>
 
 Servo left;
 Servo right;
@@ -34,14 +33,17 @@ struct coord get_angles(coord x){
   return Coord(a._1+b._1, a._2+b._2);
 }
 
+//abs(5); ((5)>0?(5):-(5))
+
 void set(coord theta){
-  left.write(theta._1*180/PI + L_OFFSET);
-  right.write(theta._2*180/PI + R_OFFSET);
+  float l = INVERT_LEFT ? PI - theta._1 : theta._1;
+  float r = INVERT_RIGHT ? PI - theta._2 : theta._2;
+  left.write(l*180/PI + L_OFFSET);
+  right.write(r*180/PI + R_OFFSET);
 }
 
 void set(float l, float r){
-  left.write(l*180/PI + L_OFFSET);
-  right.write(r*180/PI + R_OFFSET);
+  set(Coord(l, r));
 }
 
 void draw(boolean up){
@@ -71,10 +73,13 @@ void setup() {
 }
 
 void loop() {
-  set(get_angles(Coord(-10, 30)));
+  set(PI/2 + 0.2, PI/2 + 0.2);
   delay(1000);
-  set(get_angles(Coord(0, 30)));
+  set(get_angles(Coord(0, 50)));
   delay(1000);
-  set(get_angles(Coord(10, 30)));
-  delay(1000);
+  // delay(1000);
+  // set(get_angles(Coord(0, 30)));
+  // delay(1000);
+  // set(get_angles(Coord(10, 30)));
+  // delay(1000);
 }
