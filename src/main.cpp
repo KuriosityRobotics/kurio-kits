@@ -18,7 +18,7 @@ struct coord Coord(float _1, float _2){
   return c;
 }
 
-struct coord get_angles(coord x){
+struct coord get_angles(coord c){
 //  //pythag to get len from motor pivot to end effector
 //  struct coord d = {sqrt(sq(x._2) + sq(((MOTOR_DISTANCE/2) + x._1))),
 //                    sqrt(sq(x._2) + sq((MOTOR_DISTANCE/2) - x._1))};
@@ -34,14 +34,21 @@ struct coord get_angles(coord x){
 //  //add angles together now and return them
 //  return Coord(a._1+b._1, a._2+b._2);
 
-    float c = sqrt(pow(x._1, 2) + pow(x._2, 2));
-    float d = sqrt(pow(MOTOR_DISTANCE - x._1, 2) + pow(x._2, 2));
+    float x = c._1, y = c._2;
 
-    float theta1 = atan2(x._2, x._1) + acos((0 - pow(FLOATING_ARM_LEN, 2) + pow(MOTOR_ARM_LEN, 2) + pow(c, 2)) / (2 * MOTOR_ARM_LEN * c));
-    float theta2 = M_PI - atan2(x._2, MOTOR_DISTANCE - x._1) - acos((0 - pow(FLOATING_ARM_LEN, 2) + pow(MOTOR_ARM_LEN, 2) + pow(d, 2)) / (2 * MOTOR_ARM_LEN * d));
+    float phi1 = MOTOR_DISTANCE - x == 0 ? M_PI / 2 : atan2(y, MOTOR_DISTANCE - x);
+    float phi2 = x == 0 ? M_PI / 2 : atan2(y,  x);
 
-    return Coord(theta1, theta2);
-}
+    float sqrt1 = sqrt(pow(y, 2) + pow(MOTOR_DISTANCE - x, 2)), sqrt2 = sqrt(y * y + x * x);
+
+    float theta1 = acos((pow(sqrt1, 2) + pow(MOTOR_ARM_LEN, 2) - pow(FLOATING_ARM_LEN, 2)) / (2 * MOTOR_ARM_LEN * sqrt1));
+    float theta2 = acos((pow(sqrt2, 2) + pow(MOTOR_ARM_LEN, 2) + pow(FLOATING_ARM_LEN, 2)) / (2 * MOTOR_ARM_LEN * sqrt2));
+
+    Serial.println("first angle: " + ((String) (theta2 + phi2)));
+    Serial.println("second angle: " + ((String) (M_PI - theta1 - phi1)));
+
+    return Coord(theta2 + phi2, M_PI - theta1 - phi1);
+} 
 
 //abs(5); ((5)>0?(5):-(5))
 
@@ -85,7 +92,7 @@ void setup() {
 void loop() {
   set(PI/2 + 0.2, PI/2 + 0.2);
   delay(1000);
-  set(get_angles(Coord(0, 50)));
+  set(get_angles(Coord(5, 50)));
   delay(1000);
   // delay(1000);
   // set(get_angles(Coord(0, 30)));
