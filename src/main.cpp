@@ -22,12 +22,15 @@ struct coord get_angles(coord x){
                     sqrt(sq(x._2) + sq((MOTOR_DISTANCE/2) - x._1))};
 
   //law of cosines to get angle from above to motor arm
-  struct coord a = {acos((sq(FLOATING_ARM_LEN) - sq(MOTOR_ARM_LEN) - sq(d._1))/(2*MOTOR_ARM_LEN*d._1)),
-                    acos((sq(FLOATING_ARM_LEN) - sq(MOTOR_ARM_LEN) - sq(d._2))/(2*MOTOR_ARM_LEN*d._2))};
+  struct coord a = {acos((sq(FLOATING_ARM_LEN) - sq(MOTOR_ARM_LEN) + sq(d._1))/(2*MOTOR_ARM_LEN*d._1)),
+                    acos((sq(FLOATING_ARM_LEN) - sq(MOTOR_ARM_LEN) + sq(d._2))/(2*MOTOR_ARM_LEN*d._2))};
 
   //arctan to get angle from horiz to line referenced above
-  struct coord b = {acos(((MOTOR_DISTANCE/2) + x._1)/d._1),
-                    acos(((MOTOR_DISTANCE/2) - x._1)/d._2)};
+//  struct coord b = {acos(((MOTOR_DISTANCE/2) + x._1)/d._1),
+  //                  acos(((MOTOR_DISTANCE/2) - x._1)/d._2)};
+    struct coord b = {atan(x._2/((MOTOR_DISTANCE/2) + x._1)),
+                      atan(x._2/((MOTOR_DISTANCE/2) - x._1))};
+
   Serial.println("a");
   Serial.println(String(a._1) + " " + String(a._2));
   Serial.println("b");
@@ -93,3 +96,4 @@ void loop() {
   // set(get_angles(Coord(10, 30)));
   // delay(1000);
 }
+
