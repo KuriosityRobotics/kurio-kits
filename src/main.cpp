@@ -45,7 +45,7 @@ struct coord get_angles(coord x){
 //abs(5); ((5)>0?(5):-(5))
 
 void set(coord theta){
-  Serial.println(String(theta._1) + " " + String(theta._2));
+  Serial.println("angles: " + String(180./PI * theta._1) + " " + String(180./PI * theta._2));
   double l = INVERT_LEFT ? PI - theta._1 : theta._1;
   double r = INVERT_RIGHT ? PI - theta._2 : theta._2;
   left.write(l*180/PI + L_OFFSET);
@@ -78,22 +78,21 @@ void setup() {
 
   Serial.begin(9600);
   struct coord pt = {0, 100};
-  Serial.println(String(get_angles(pt)._1) + String(get_angles(pt)._2));
+  Serial.println("angles: " + String(get_angles(pt)._1) + String(get_angles(pt)._2));
 }
 
 void loop() {
-  set(PI/2, 3*PI/4);
-  delay(1000);
-  set(3*PI/4, PI/2);
-  delay(1000);
-  set(PI, 4*PI/6);
-  delay(1000);
-  set(4*PI/6, PI);
-  delay(1000);
+  // set(PI/2, 3*PI/4);
   // delay(1000);
-  // set(get_angles(Coord(0, 30)));
+  // set(3*PI/4, PI/2);
   // delay(1000);
-  // set(get_angles(Coord(10, 30)));
+  // set(PI, 4*PI/6);
   // delay(1000);
+  // set(4*PI/6, PI);
+  // delay(1000);
+  set(get_angles(Coord(-10, 30)));
+  delay(1000);
+  set(get_angles(Coord(10, 30)));
+  delay(1000);
 }
 
