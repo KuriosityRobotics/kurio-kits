@@ -28,8 +28,8 @@ struct coord get_angles(coord x){
   //arctan to get angle from horiz to line referenced above
 //  struct coord b = {acos(((MOTOR_DISTANCE/2) + x._1)/d._1),
   //                  acos(((MOTOR_DISTANCE/2) - x._1)/d._2)};
-    struct coord b = {atan(x._2/((MOTOR_DISTANCE/2) + x._1)),
-                      atan(x._2/((MOTOR_DISTANCE/2) - x._1))};
+    struct coord b = {atan2(x._2, ((MOTOR_DISTANCE/2) + x._1)),
+                      atan2(x._2, ((MOTOR_DISTANCE/2) - x._1))};
 
   Serial.println("a");
   Serial.println(String(a._1) + " " + String(a._2));
@@ -77,7 +77,7 @@ void setup() {
   lift.write(0);
 
   Serial.begin(9600);
-  struct coord pt = {0, 100};
+  struct coord pt = {0, 70};
   Serial.println("angles: " + String(get_angles(pt)._1) + String(get_angles(pt)._2));
 }
 
