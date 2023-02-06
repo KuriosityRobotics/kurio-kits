@@ -1,20 +1,17 @@
+#ifndef LIB_H
+#define LIB_H
+
 #include <Arduino.h>
 #include <Servo.h>
-#include <Configuration.h>
+
+#include "lib.h"
+#include "Configuration.h"
+
+// implementation below
 
 Servo left;
 Servo right;
 Servo lift;
-
-struct coord{
-    double _1;
-    double _2;
-};
-
-struct coord Coord(double _1, double _2){
-  struct coord c = {_1, _2};
-  return c;
-}
 
 struct coord get_angles(coord x){
   //pythag to get len from motor pivot to end effector
@@ -61,51 +58,38 @@ coord calc_angles(coord c) {
   double shoulder1 = beta1 + alpha1;
   double shoulder2 = beta2 + alpha2;
 
-  return Coord(shoulder1, shoulder2);
+  return Coord(shoulder1*180./PI, shoulder2*180./PI);
 }
 
 //abs(5); ((5)>0?(5):-(5))
 
-void set(coord theta){
-  Serial.println("angles: " + String(180./PI * theta._1) + " " + String(180./PI * theta._2));
-  double l = INVERT_LEFT ? theta._1 : PI - theta._1;
-  double r = INVERT_RIGHT ? theta._2 : PI - theta._2;
-  left.write(l*180/PI + L_OFFSET);
-  right.write(r*180/PI + R_OFFSET);
+void set_angles(coord theta){
+  // Serial.println("angles: " + String(180./PI * theta._1) + " " + String(180./PI * theta._2));
+  double l = INVERT_LEFT ? 180 - theta._1 : theta._1;
+  double r = INVERT_RIGHT ? 180 - theta._2 : theta._2;
+  double l = (L_BOZO*(l-90) + 90 + L_OFFSET); //for the reasoning behind this see Configuration.ino
+  double r = (R_BOZO*(r-90) + 90 + R_OFFSET); //for the reasoning behind this see Configuration.ino
+  Serial.println("final angles: " + String(l) + String(r));
+  left.write(l); 
+  right.write(r);
 }
 
-void set(double l, double r){
-  set(Coord(l, r));
+void set_angles(double l, double r){
+  set_angles(Coord(l, r));
 }
 
-void draw(boolean up){
-  if(up){
-    lift.write(45);
-  } else {
-    lift.write(0);
-  }
+void penUp() {
+  lift.write(45);
 }
+
+void penDown() {
+  lift.write(0);
+}
+
 
 coord position = Coord(0, 0);
-
-void setup() {
-  pinMode(9, OUTPUT);
-  pinMode(10, OUTPUT);
-  pinMode(11, OUTPUT);
-  left.attach(9);
-  right.attach(10);
-  lift.attach(11);
-
-  set(PI/2, PI/2);
-  lift.write(0);
-
-  Serial.begin(9600);
-  struct coord pt = {0, 70};
-  Serial.println("angles: " + String(calc_angles(pt)._1) + String(calc_angles(pt)._2));
-}
-
 void goTo(double x, double y){
-  set(calc_angles(Coord(x, y)));
+  set_angles(calc_angles(Coord(x, y)));
   position = Coord(x, y);
 }
 
@@ -121,13 +105,29 @@ void glideTo(double x, double y, double seconds){
   goTo(x, y);
 }
 
-void loop() {
-  // glideTo(-40, 50, 2);
-  // delay(1000);
-  // glideTo(40, 50, 2);
-  // delay(1000);
-  set(M_PI/2, M_PI);
-  delay(1000);
-  set(M_PI, M_PI/2);
-  delay(1000);
+void setup() {
+  pinMode(9, OUTPUT);
+  pinMode(10, OUTPUT);
+  pinMode(11, OUTPUT);
+  pinMode(7, INPUT);
+  pinMode(6, INPUT);
+  pinMode(5, INPUT);
+  pinMode(4, INPUT);
+  pinMode(3, INPUT);
+  pinMode(2, INPUT);
+
+  left.attach(9);
+  right.attach(10);
+  lift.attach(11);
+
+  // set_angles(PI/2, PI/2);
+  lift.write(0);
+
+  Serial.begin(9600);
+  struct coord pt = {0, 70};
+  Serial.println("angles: " + String(calc_angles(pt)._1) + String(calc_angles(pt)._2));
+  Serial.println("L_BOZO: " + String(L_BOZO) + "R_BOZO: " + String(R_BOZO)+"L_OFFSET: "+String(L_OFFSET)+"R_OFFSET: "+String(R_OFFSET));
+
+  // create_drawing();
 }
+#endif
