@@ -67,8 +67,8 @@ void set_angles(coord theta){
   // Serial.println("angles: " + String(180./PI * theta._1) + " " + String(180./PI * theta._2));
   double l = INVERT_LEFT ? 180 - theta._1 : theta._1;
   double r = INVERT_RIGHT ? 180 - theta._2 : theta._2;
-  double l = (L_BOZO*(l-90) + 90 + L_OFFSET); //for the reasoning behind this see Configuration.ino
-  double r = (R_BOZO*(r-90) + 90 + R_OFFSET); //for the reasoning behind this see Configuration.ino
+  l = (L_BOZO*(l-90) + 90 + L_OFFSET); //for the reasoning behind this see Configuration.ino
+  r = (R_BOZO*(r-90) + 90 + R_OFFSET); //for the reasoning behind this see Configuration.ino
   Serial.println("final angles: " + String(l) + String(r));
   left.write(l); 
   right.write(r);
