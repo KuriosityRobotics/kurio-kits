@@ -1,13 +1,18 @@
-#ifndef LIB_H
-#define LIB_H
-
 #include <Arduino.h>
 #include <Servo.h>
 
 #include "lib.h"
 #include "Configuration.h"
 
-// implementation below
+struct coord {
+    double _1;
+    double _2;
+} ;
+
+struct coord Coord(double _1, double _2) {
+  struct coord c = {_1, _2};
+  return c;
+}
 
 Servo left;
 Servo right;
@@ -130,4 +135,3 @@ void setup() {
 
   // create_drawing();
 }
-#endif
