@@ -3,8 +3,16 @@
 
 void set_angles(double l, double r);
 
+struct coord;
+
 void penUp();
 void penDown();
+
+double getX();
+double getY();
+
+bool getPenState();
+coord getPos();
 
 void create_drawing();
 

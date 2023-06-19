@@ -6,3 +6,5 @@
 .vscode/ipch
 .vscode
 .vscode/*
+src/
+.DS_Store

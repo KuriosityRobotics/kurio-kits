@@ -5,11 +5,13 @@
 #define L_OFFSET 0
 #define R_OFFSET 0
 
-// Step 2: Invert the neccessary sides. See instructions pg. 33
-#define INVERT_LEFT true  // set this to true if the left servo goes out on set_angles(0,0);
-#define INVERT_RIGHT false // set this to true if the right servo goes out on set_angles(0,0);
+// Step 2: Invert the neccessary sides. when you run 
+// set_angles(0,0), both servos should move inwards. 
+// If they don't, flip the corresponding variable here.
+#define INVERT_LEFT true
+#define INVERT_RIGHT false
 
-// Step 3: Tune the scale factor. See instructions pg. 
+// Step 3: Tune the scale factor.
 #define L_BOZO 1
 #define R_BOZO 1
 

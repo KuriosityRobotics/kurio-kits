@@ -6,6 +6,6 @@ void loop() {
   penDown();
   glideTo(10, 60, 2);
   glideTo(10, 80, 2);
-  glideTo(-10, 60, 2);
+  glideTo(-10, 80, 2);
   glideTo(-10, 60, 2);
 }

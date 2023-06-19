@@ -7,7 +7,7 @@
 struct coord {
     double _1;
     double _2;
-} ;
+};
 
 struct coord Coord(double _1, double _2) {
   struct coord c = {_1, _2};
@@ -18,52 +18,39 @@ Servo left;
 Servo right;
 Servo lift;
 
-struct coord get_angles(coord x){
-  //pythag to get len from motor pivot to end effector
-  struct coord d = {sqrt(sq(x._2) + sq(MOTOR_TO_ORIGIN + x._1)),
-                    sqrt(sq(x._2) + sq(MOTOR_TO_ORIGIN - x._1))};
+bool penLifted = false;
 
-  //law of cosines to get angle from above to motor arm
-  struct coord a = {acos((sq(FLOATING_ARM_LEN) - sq(MOTOR_ARM_LEN) + sq(d._1))/(2*MOTOR_ARM_LEN*d._1)),
-                    acos((sq(FLOATING_ARM_LEN) - sq(MOTOR_ARM_LEN) + sq(d._2))/(2*MOTOR_ARM_LEN*d._2))};
-
-  //arctan to get angle from horiz to line referenced above
-//  struct coord b = {acos(((MOTOR_DISTANCE/2) + x._1)/d._1),
-  //                  acos(((MOTOR_DISTANCE/2) - x._1)/d._2)};
-    struct coord b = {atan2(x._2, (MOTOR_TO_ORIGIN + x._1)),
-                      atan2(x._2, (MOTOR_TO_ORIGIN - x._1))};
-
-  Serial.println("a");
-  Serial.println(String(a._1) + " " + String(a._2));
-  Serial.println("b");
-  Serial.println(String(b._1) + " " + String(b._2));
-  Serial.println("d");
-  Serial.println(String(d._1) + " " + String(d._2));
-  // Serial.println(String(d._2/((MOTOR_DISTANCE/2) + x._1)));
-  //add angles together now and return them
-  return Coord(a._1+b._1, a._2+b._2);
-}
 
 coord calc_angles(coord c) {
-  double beta1 = atan2(c._2, (MOTOR_TO_ORIGIN + c._1));
-  double beta2 = atan2(c._2, (MOTOR_TO_ORIGIN - c._1));
+  //calculate inner angles with inverse tangent
+  struct coord beta = {atan2(c._2, (MOTOR_TO_ORIGIN + c._1)),
+                       atan2(c._2, (MOTOR_TO_ORIGIN - c._1))};
 
-  double alpha1_calc = (MOTOR_ARM_LEN * MOTOR_ARM_LEN + ((MOTOR_TO_ORIGIN + c._1) * (MOTOR_TO_ORIGIN + c._1) + c._2 * c._2) - FLOATING_ARM_LEN * FLOATING_ARM_LEN) / 
-                      (2 * MOTOR_ARM_LEN * sqrt((MOTOR_TO_ORIGIN + c._1) * (MOTOR_TO_ORIGIN + c._1) + c._2 * c._2));
-  double alpha2_calc = (MOTOR_ARM_LEN * MOTOR_ARM_LEN + ((MOTOR_TO_ORIGIN - c._1) * (MOTOR_TO_ORIGIN - c._1) + c._2 * c._2) - FLOATING_ARM_LEN * FLOATING_ARM_LEN) / 
-                      (2 * MOTOR_ARM_LEN * sqrt((MOTOR_TO_ORIGIN - c._1) * (MOTOR_TO_ORIGIN - c._1) + c._2 * c._2));
+  // calculate rhs of law of cosine: cos(alpha) = (a^2 + b^2 - c^2)/(2ab)
+  struct coord alpha_calc = {
+    (MOTOR_ARM_LEN * MOTOR_ARM_LEN + ((MOTOR_TO_ORIGIN + c._1) * (MOTOR_TO_ORIGIN + c._1) + c._2 * c._2) - FLOATING_ARM_LEN * FLOATING_ARM_LEN) / 
+      (2 * MOTOR_ARM_LEN * sqrt((MOTOR_TO_ORIGIN + c._1) * (MOTOR_TO_ORIGIN + c._1) + c._2 * c._2)),
+    (MOTOR_ARM_LEN * MOTOR_ARM_LEN + ((MOTOR_TO_ORIGIN - c._1) * (MOTOR_TO_ORIGIN - c._1) + c._2 * c._2) - FLOATING_ARM_LEN * FLOATING_ARM_LEN) / 
+      (2 * MOTOR_ARM_LEN * sqrt((MOTOR_TO_ORIGIN - c._1) * (MOTOR_TO_ORIGIN - c._1) + c._2 * c._2))
+  };
 
-  if (alpha1_calc > 1 || alpha2_calc > 1){ 
+  // double check that cos(alpha)<1
+  // cosine is bounded to [-1, 1] so if it's 
+  // over 1 then something is very wrong
+  if (alpha_calc._1 > 1 || alpha_calc._2 > 1){ 
     exit(1);
   }
 
-  double alpha1 = acos(alpha1_calc);
-  double alpha2 = acos(alpha2_calc);
+  // use inverse cosine to calculate the angle
+  struct coord alpha = {acos(alpha_calc._1),
+                        acos(alpha_calc._2)};
 
-  double shoulder1 = beta1 + alpha1;
-  double shoulder2 = beta2 + alpha2;
+  // add the inner and outer angles to get the 
+  // full motor angle, then convert to degrees.
+  struct coord motors = {(beta._1+alpha._1)*180./PI,
+                         (beta._2+alpha._2)*180./PI};
 
-  return Coord(shoulder1*180./PI, shoulder2*180./PI);
+  return motors;
 }
 
 //abs(5); ((5)>0?(5):-(5))
@@ -84,42 +71,59 @@ void set_angles(double l, double r){
 }
 
 void penUp() {
-  lift.write(45);
+  lift.write(90);
+  penLifted = true;
 }
 
 void penDown() {
   lift.write(0);
+  penLifted = false;
+}
+
+bool getPenState(){
+  // true if lifted, false if lowered
+  return penLifted;
 }
 
 
-coord position = Coord(0, 0);
+coord position = Coord(0, 80);
 void goTo(double x, double y){
   set_angles(calc_angles(Coord(x, y)));
-  position = Coord(x, y);
+  position._1 = x;
+  position._2 = y;
 }
 
 void glideTo(double x, double y, double seconds){
+  glideTo(x, y, seconds, 1000);
+}
+
+void glideTo(double x, double y, double seconds, int interpSegments){
   double startTime = millis();
   coord startPos = position;
-  double endTime = startTime + seconds * 1000.;
+  double endTime = startTime + seconds * double(interpSegments);
   while (millis() < endTime){
     double timePassed = millis() - startTime;
-    double fractionMoved = timePassed/(seconds * 1000.);
+    double fractionMoved = timePassed/(seconds * double(interpSegments));
     goTo(startPos._1 + fractionMoved * (x - startPos._1), startPos._2 + fractionMoved * (y - startPos._2));
   }
   goTo(x, y);
+}
+
+double getX(){
+  return position._1;
+}
+double getY(){
+  return position._2;
+}
+
+coord getPos(){
+  return position;
 }
 
 void setup() {
   pinMode(9, OUTPUT);
   pinMode(10, OUTPUT);
   pinMode(11, OUTPUT);
-  pinMode(7, INPUT);
-  pinMode(6, INPUT);
-  pinMode(5, INPUT);
-  pinMode(4, INPUT);
-  pinMode(3, INPUT);
-  pinMode(2, INPUT);
 
   left.attach(9);
   right.attach(10);
@@ -129,9 +133,10 @@ void setup() {
   lift.write(0);
 
   Serial.begin(9600);
-  struct coord pt = {0, 70};
-  Serial.println("angles: " + String(calc_angles(pt)._1) + String(calc_angles(pt)._2));
-  Serial.println("L_BOZO: " + String(L_BOZO) + "R_BOZO: " + String(R_BOZO)+"L_OFFSET: "+String(L_OFFSET)+"R_OFFSET: "+String(R_OFFSET));
+  Serial.println("Configuration:");
+  Serial.println("L_BOZO: " + String(L_BOZO) + "\nR_BOZO: " + String(R_BOZO)+"\nL_OFFSET: "+String(L_OFFSET)+"\nR_OFFSET: "+String(R_OFFSET));
 
-  // create_drawing();
+  // initialization sequence
+  penUp(); // lift pen 
+  goTo(0, 80); //go to initial home position
 }
