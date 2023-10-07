@@ -5,12 +5,12 @@
 #include "Configuration.h"
 
 struct coord {
-    double _1;
-    double _2;
+  double _1;
+  double _2;
 };
 
 struct coord Coord(double _1, double _2) {
-  struct coord c = {_1, _2};
+  struct coord c = { _1, _2 };
   return c;
 }
 
@@ -22,9 +22,11 @@ bool penLifted = false;
 
 
 coord calc_angles(coord c) {
-  //calculate inner angles with inverse tangent
-  struct coord beta = {atan2(c._2, (MOTOR_TO_ORIGIN + c._1)),
-                       atan2(c._2, (MOTOR_TO_ORIGIN - c._1))};
+  // calculate inner angles with inverse tangent
+  struct coord beta = {
+    atan2(c._2, (MOTOR_TO_ORIGIN + c._1)),
+    atan2(c._2, (MOTOR_TO_ORIGIN - c._1))
+  };
 
   // calculate rhs of law of cosine: cos(alpha) = (a^2 + b^2 - c^2)/(2ab)
   struct coord alpha_calc = {
@@ -34,7 +36,7 @@ coord calc_angles(coord c) {
       (2 * MOTOR_ARM_LEN * sqrt((MOTOR_TO_ORIGIN - c._1) * (MOTOR_TO_ORIGIN - c._1) + c._2 * c._2))
   };
 
-  // double check that cos(alpha)<1
+  // double check that cos(alpha) < 1
   // cosine is bounded to [-1, 1] so if it's 
   // over 1 then something is very wrong
   if (alpha_calc._1 > 1 || alpha_calc._2 > 1){ 
@@ -42,25 +44,27 @@ coord calc_angles(coord c) {
   }
 
   // use inverse cosine to calculate the angle
-  struct coord alpha = {acos(alpha_calc._1),
-                        acos(alpha_calc._2)};
+  struct coord alpha = {
+    acos(alpha_calc._1),
+    acos(alpha_calc._2)
+  };
 
   // add the inner and outer angles to get the 
   // full motor angle, then convert to degrees.
-  struct coord motors = {(beta._1+alpha._1)*180./PI,
-                         (beta._2+alpha._2)*180./PI};
+  struct coord motors = {
+    (beta._1+alpha._1) * 180. / PI,
+    (beta._2+alpha._2) * 180. / PI
+  };
 
   return motors;
 }
-
-//abs(5); ((5)>0?(5):-(5))
 
 void set_angles(coord theta){
   // Serial.println("angles: " + String(180./PI * theta._1) + " " + String(180./PI * theta._2));
   double l = INVERT_LEFT ? 180 - theta._1 : theta._1;
   double r = INVERT_RIGHT ? 180 - theta._2 : theta._2;
-  l = (L_BOZO*(l-90) + 90 + L_OFFSET); //for the reasoning behind this see Configuration.ino
-  r = (R_BOZO*(r-90) + 90 + R_OFFSET); //for the reasoning behind this see Configuration.ino
+  l = (L_SCALE * (l - 90) + 90 + L_OFFSET); // for the reasoning behind this see Configuration.ino
+  r = (R_SCALE * (r - 90) + 90 + R_OFFSET); // for the reasoning behind this see Configuration.ino
   Serial.println("final angles: " + String(l) + String(r));
   left.write(l); 
   right.write(r);
@@ -134,9 +138,9 @@ void setup() {
 
   Serial.begin(9600);
   Serial.println("Configuration:");
-  Serial.println("L_BOZO: " + String(L_BOZO) + "\nR_BOZO: " + String(R_BOZO)+"\nL_OFFSET: "+String(L_OFFSET)+"\nR_OFFSET: "+String(R_OFFSET));
+  Serial.println("L_OFFSET: " + String(L_OFFSET) + "\nR_OFFSET: " + String(R_OFFSET));
 
   // initialization sequence
   penUp(); // lift pen 
-  goTo(0, 80); //go to initial home position
+  goTo(0, 80); // go to initial home position
 }
