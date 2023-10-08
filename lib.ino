@@ -65,7 +65,7 @@ void set_angles(coord theta){
   double r = INVERT_RIGHT ? 180 - theta._2 : theta._2;
   l = (L_SCALE * (l - 90) + 90 + L_OFFSET); // for the reasoning behind this see Configuration.ino
   r = (R_SCALE * (r - 90) + 90 + R_OFFSET); // for the reasoning behind this see Configuration.ino
-  Serial.println("final angles: " + String(l) + String(r));
+  Serial.println("setting angles: " + String(l) + ", " + String(r));
   left.write(l); 
   right.write(r);
 }
@@ -75,12 +75,12 @@ void set_angles(double l, double r){
 }
 
 void penUp() {
-  lift.write(90);
+  lift.write(130);
   penLifted = true;
 }
 
 void penDown() {
-  lift.write(0);
+  lift.write(199);
   penLifted = false;
 }
 
@@ -141,6 +141,6 @@ void setup() {
   Serial.println("L_OFFSET: " + String(L_OFFSET) + "\nR_OFFSET: " + String(R_OFFSET));
 
   // initialization sequence
-  penUp(); // lift pen 
-  goTo(0, 80); // go to initial home position
+  penDown(); // lift pen 
+  // goTo(0, 80); // go to initial home position
 }
