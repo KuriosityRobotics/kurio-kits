@@ -18,8 +18,6 @@ double getY();
 bool getPenState();
 coord getPos();
 
-void createDrawing();
-
 void goTo(double x, double y);
 void glideTo(double x, double y, double seconds);
 
