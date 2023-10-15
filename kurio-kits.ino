@@ -1,11 +1,11 @@
 #include "lib.h"
 
 void loop() {
-  penUp();
-  goTo(-10, 60);
+  // penUp();
   penDown();
-  glideTo(10, 60, 2);
-  glideTo(10, 80, 2);
-  glideTo(-10, 80, 2);
-  glideTo(-10, 60, 2);
+  glideTo(3, 0, 1);
+  glideTo(0, 0, 1);
+  // goTo(10, 80);
+  // goTo(-10, 80);
+  // goTo(-10, 60);
 }

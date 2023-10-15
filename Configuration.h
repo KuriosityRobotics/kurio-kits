@@ -13,7 +13,7 @@
 
 // Step 3: Tune the scale factor.
 #define L_SCALE 1.0
-#define R_SCALE 1.0
+#define R_SCALE 1.05
 
 // ---------- DO NOT EDIT BELOW THIS LINE ----------
 
@@ -23,5 +23,5 @@
 #define PEN_ARM_LEN 80
 
 // lifting servo positions
-#define PEN_UP 130
-#define PEN_DOWN 199
+#define PEN_UP 0
+#define PEN_DOWN 75

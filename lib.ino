@@ -191,5 +191,5 @@ void setup() {
 
   // initialization sequence
   penDown(); // lift pen 
-  // goTo(0, 80); // go to initial home position
+  // goTo(0, 0); // go to initial home position
 }
