@@ -69,6 +69,40 @@ coord calc_angles(coord c) {
   return motors;
 }
 
+coord calc_position(coord theta) {
+    // convert to radians
+    struct coord theta_rad = Coord(
+        toRadians(theta._1),
+        toRadians(theta._2)
+    );
+
+    // calculate the coordinates of the joints
+    struct coord left_joint = Coord(
+        - MOTOR_TO_ORIGIN + cos(theta_rad._1) * MOTOR_ARM_LEN,
+        sin(theta_rad._1) * MOTOR_ARM_LEN
+    );
+    struct coord right_joint = Coord(
+        MOTOR_TO_ORIGIN - cos(theta_rad._2) * MOTOR_ARM_LEN,
+        sin(theta_rad._2) * MOTOR_ARM_LEN
+    );
+
+    // we treat left_joint to right-joint as a line segment, find the midpoint, and step left by a certain distance
+    double joint_distance = sqrt(pow(left_joint._1 - right_joint._1, 2) + pow(left_joint._2 - right_joint._2, 2));
+
+    // joint_distance can not be more than 2 times the pen arm length
+    if (joint_distance > 2 * PEN_ARM_LEN) {
+        exit(1);
+    }
+
+    double pen_deviation = sqrt(pow(PEN_ARM_LEN, 2) - pow(joint_distance / 2, 2));
+
+    // from the midpoint, we step left by pen_deviation
+    double pen_x = (left_joint._1 + right_joint._1) / 2 - pen_deviation * (right_joint._2 - left_joint._2) / joint_distance;
+    double pen_y = (left_joint._2 + right_joint._2) / 2 + pen_deviation * (right_joint._1 - left_joint._1) / joint_distance;
+
+    return Coord(pen_x, pen_y);
+}
+
 void setAngles(coord theta) { // in degrees
   // invert if necessary
   double l = INVERT_LEFT ? 180 - theta._1 : theta._1;
@@ -77,6 +111,8 @@ void setAngles(coord theta) { // in degrees
   // scale and offset
   l = (L_SCALE * (l - 90) + 90 + L_OFFSET);
   r = (R_SCALE * (r - 90) + 90 + R_OFFSET);
+
+  currentPosition = calc_position(theta);
 
   Serial.println("setting angles: " + String(l) + ", " + String(r));
   left.write(l); 
@@ -105,8 +141,8 @@ bool getPenState(){
 
 void goTo(double x, double y){
   setAngles(calc_angles(Coord(x, y)));
-  currentPosition._1 = x;
-  currentPosition._2 = y;
+//  currentPosition._1 = x;
+//  currentPosition._2 = y;
 }
 
 void glideTo(double x, double y, double seconds) {
