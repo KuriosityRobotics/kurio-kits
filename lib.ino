@@ -14,11 +14,21 @@ struct coord Coord(double _1, double _2) {
   return c;
 }
 
+double toRadians(double theta) {
+  return theta * PI / 180.;
+}
+
+double toDegrees(double theta) {
+  return theta * 180. / PI;
+}
+
 Servo left;
 Servo right;
 Servo lift;
 
 bool penLifted = false;
+
+coord currentPosition = Coord(0, 80);
 
 
 coord calc_angles(coord c) {
@@ -30,9 +40,9 @@ coord calc_angles(coord c) {
 
   // calculate rhs of law of cosine: cos(alpha) = (a^2 + b^2 - c^2)/(2ab)
   struct coord alpha_calc = {
-    (MOTOR_ARM_LEN * MOTOR_ARM_LEN + ((MOTOR_TO_ORIGIN + c._1) * (MOTOR_TO_ORIGIN + c._1) + c._2 * c._2) - FLOATING_ARM_LEN * FLOATING_ARM_LEN) / 
+    (MOTOR_ARM_LEN * MOTOR_ARM_LEN + ((MOTOR_TO_ORIGIN + c._1) * (MOTOR_TO_ORIGIN + c._1) + c._2 * c._2) - PEN_ARM_LEN * PEN_ARM_LEN) /
       (2 * MOTOR_ARM_LEN * sqrt((MOTOR_TO_ORIGIN + c._1) * (MOTOR_TO_ORIGIN + c._1) + c._2 * c._2)),
-    (MOTOR_ARM_LEN * MOTOR_ARM_LEN + ((MOTOR_TO_ORIGIN - c._1) * (MOTOR_TO_ORIGIN - c._1) + c._2 * c._2) - FLOATING_ARM_LEN * FLOATING_ARM_LEN) / 
+    (MOTOR_ARM_LEN * MOTOR_ARM_LEN + ((MOTOR_TO_ORIGIN - c._1) * (MOTOR_TO_ORIGIN - c._1) + c._2 * c._2) - PEN_ARM_LEN * PEN_ARM_LEN) /
       (2 * MOTOR_ARM_LEN * sqrt((MOTOR_TO_ORIGIN - c._1) * (MOTOR_TO_ORIGIN - c._1) + c._2 * c._2))
   };
 
@@ -44,43 +54,46 @@ coord calc_angles(coord c) {
   }
 
   // use inverse cosine to calculate the angle
-  struct coord alpha = {
+  struct coord alpha = Coord(
     acos(alpha_calc._1),
     acos(alpha_calc._2)
-  };
+  );
 
   // add the inner and outer angles to get the 
   // full motor angle, then convert to degrees.
-  struct coord motors = {
-    (beta._1+alpha._1) * 180. / PI,
-    (beta._2+alpha._2) * 180. / PI
-  };
+  struct coord motors = Coord(
+    toDegrees(beta._1 + alpha._1),
+    toDegrees(beta._2 + alpha._2)
+  );
 
   return motors;
 }
 
-void set_angles(coord theta){
-  // Serial.println("angles: " + String(180./PI * theta._1) + " " + String(180./PI * theta._2));
+void setAngles(coord theta) { // in degrees
+  // invert if necessary
   double l = INVERT_LEFT ? 180 - theta._1 : theta._1;
   double r = INVERT_RIGHT ? 180 - theta._2 : theta._2;
-  l = (L_SCALE * (l - 90) + 90 + L_OFFSET); // for the reasoning behind this see Configuration.ino
-  r = (R_SCALE * (r - 90) + 90 + R_OFFSET); // for the reasoning behind this see Configuration.ino
+
+  // scale and offset
+  l = (L_SCALE * (l - 90) + 90 + L_OFFSET);
+  r = (R_SCALE * (r - 90) + 90 + R_OFFSET);
+
   Serial.println("setting angles: " + String(l) + ", " + String(r));
   left.write(l); 
   right.write(r);
 }
 
-void set_angles(double l, double r){
-  set_angles(Coord(l, r));
+void setAngles(double l, double r) {
+  setAngles(Coord(l, r));
 }
 
 void penUp() {
-  lift.write(130);
+  lift.write(PEN_UP);
   penLifted = true;
 }
 
 void penDown() {
-  lift.write(199);
+  lift.write(PEN_DOWN);
   penLifted = false;
 }
 
@@ -90,20 +103,19 @@ bool getPenState(){
 }
 
 
-coord position = Coord(0, 80);
 void goTo(double x, double y){
-  set_angles(calc_angles(Coord(x, y)));
-  position._1 = x;
-  position._2 = y;
+  setAngles(calc_angles(Coord(x, y)));
+  currentPosition._1 = x;
+  currentPosition._2 = y;
 }
 
-void glideTo(double x, double y, double seconds){
+void glideTo(double x, double y, double seconds) {
   glideTo(x, y, seconds, 1000);
 }
 
-void glideTo(double x, double y, double seconds, int interpSegments){
+void glideTo(double x, double y, double seconds, int interpSegments) {
   double startTime = millis();
-  coord startPos = position;
+  coord startPos = currentPosition;
   double endTime = startTime + seconds * double(interpSegments);
   while (millis() < endTime){
     double timePassed = millis() - startTime;
@@ -113,15 +125,16 @@ void glideTo(double x, double y, double seconds, int interpSegments){
   goTo(x, y);
 }
 
-double getX(){
-  return position._1;
-}
-double getY(){
-  return position._2;
+double getX() {
+  return currentPosition._1;
 }
 
-coord getPos(){
-  return position;
+double getY() {
+  return currentPosition._2;
+}
+
+coord getPos() {
+  return currentPosition;
 }
 
 void setup() {
@@ -133,7 +146,7 @@ void setup() {
   right.attach(10);
   lift.attach(11);
 
-  // set_angles(PI/2, PI/2);
+  // setAngles(90, 90);
   lift.write(0);
 
   Serial.begin(9600);

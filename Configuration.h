@@ -1,12 +1,12 @@
-// Configuration.ino
+// Configuration.h
 // This file contains a bunch of constants and things you need to tune.
 
-// Step 1: Tune the 90-degree position.
+// Step 1: Tune the 90-degree position. (degrees)
 #define L_OFFSET 0
 #define R_OFFSET 0
 
-// Step 2: Invert the neccessary sides. When you run
-// set_angles(0,0), both servos should move inwards.
+// Step 2: Invert the necessary sides. When you run
+// setAngles(0,0), both servos should move inwards.
 // If they don't, flip the corresponding variable here.
 #define INVERT_LEFT true
 #define INVERT_RIGHT false
@@ -17,7 +17,11 @@
 
 // ---------- DO NOT EDIT BELOW THIS LINE ----------
 
-// constants about the lengths of the arms
+// robot geometry constants (millimeters)
 #define MOTOR_TO_ORIGIN 22.75
 #define MOTOR_ARM_LEN 60
-#define FLOATING_ARM_LEN 80
+#define PEN_ARM_LEN 80
+
+// lifting servo positions
+#define PEN_UP 130
+#define PEN_DOWN 199
