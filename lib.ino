@@ -36,7 +36,7 @@ double solveTriangle(double a, double b, double c) {
     return acos((c*c-a*a-b*b)/(-2*a*b));
 }
 
-coord calcAngle(coord c) {
+coord calcAngles(coord c) {
     double l1 = sqrt(pow(c._1+MOTOR_TO_ORIGIN), 2) + pow(c._2));
     double l2 = sqrt(pow(c._1-MOTOR_TO_ORIGIN), 2) + pow(c._2));
     double theta1 = toDegrees(solveTriangle(l1, 2*MOTOR_TO_ORIGIN, l2));
@@ -44,44 +44,6 @@ coord calcAngle(coord c) {
     double omega1 = toDegrees(solveTriangle(MOTOR_ARM_LEN, l1, PEN_ARM_LEN));
     double omega2 = toDegrees(solveTriangle(MOTOR_ARM_LEN, l2, PEN_ARM_LEN));
     return Coord(theta1 + omega1, theta2 + omega2);
-}
-
-coord calc_angles(coord c) {
-  // calculate inner angles with inverse tangent
-  struct coord beta = {
-    atan2(c._2, (MOTOR_TO_ORIGIN + c._1)),
-    atan2(c._2, (MOTOR_TO_ORIGIN - c._1))
-  };
-
-  // calculate rhs of law of cosine: cos(alpha) = (a^2 + b^2 - c^2)/(2ab)
-  struct coord alpha_calc = {
-    (MOTOR_ARM_LEN * MOTOR_ARM_LEN + ((MOTOR_TO_ORIGIN + c._1) * (MOTOR_TO_ORIGIN + c._1) + c._2 * c._2) - PEN_ARM_LEN * PEN_ARM_LEN) /
-      (2 * MOTOR_ARM_LEN * sqrt((MOTOR_TO_ORIGIN + c._1) * (MOTOR_TO_ORIGIN + c._1) + c._2 * c._2)),
-    (MOTOR_ARM_LEN * MOTOR_ARM_LEN + ((MOTOR_TO_ORIGIN - c._1) * (MOTOR_TO_ORIGIN - c._1) + c._2 * c._2) - PEN_ARM_LEN * PEN_ARM_LEN) /
-      (2 * MOTOR_ARM_LEN * sqrt((MOTOR_TO_ORIGIN - c._1) * (MOTOR_TO_ORIGIN - c._1) + c._2 * c._2))
-  };
-
-  // double check that cos(alpha) < 1
-  // cosine is bounded to [-1, 1] so if it's 
-  // over 1 then something is very wrong
-  if (alpha_calc._1 > 1 || alpha_calc._2 > 1){ 
-    // exit(1);
-  }
-
-  // use inverse cosine to calculate the angle
-  struct coord alpha = Coord(
-    acos(alpha_calc._1),
-    acos(alpha_calc._2)
-  );
-
-  // add the inner and outer angles to get the 
-  // full motor angle, then convert to degrees.
-  struct coord motors = Coord(
-    toDegrees(beta._1 + alpha._1),
-    toDegrees(beta._2 + alpha._2)
-  );
-
-  return motors;
 }
 
 coord calc_position(coord theta) {
@@ -155,7 +117,7 @@ bool getPenState(){
 
 
 void goTo(double x, double y){
-  setAngles(calc_angles(Coord(x, y)));
+  setAngles(calcAngles(Coord(x, y)));
 //  currentPosition._1 = x;
 //  currentPosition._2 = y;
 }
