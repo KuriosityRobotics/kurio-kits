@@ -32,17 +32,19 @@ coord currentPosition = Coord(0, 80);
 
 // solves angle opposite to Side c
 double solveTriangle(double a, double b, double c) {
-    // LoC
+    // Law of Cosines
     return acos((c*c-a*a-b*b)/(-2*a*b));
 }
 
 coord calcAngles(coord c) {
-    double l1 = sqrt(pow(c._1+MOTOR_TO_ORIGIN), 2) + pow(c._2));
-    double l2 = sqrt(pow(c._1-MOTOR_TO_ORIGIN), 2) + pow(c._2));
-    double theta1 = toDegrees(solveTriangle(l1, 2*MOTOR_TO_ORIGIN, l2));
-    double theta2 = toDegrees(solveTriangle(l2, 2*MOTOR_TO_ORIGIN, l1));
-    double omega1 = toDegrees(solveTriangle(MOTOR_ARM_LEN, l1, PEN_ARM_LEN));
-    double omega2 = toDegrees(solveTriangle(MOTOR_ARM_LEN, l2, PEN_ARM_LEN));
+    double leftDistance = sqrt(pow(c._1+MOTOR_TO_ORIGIN), 2) + pow(c._2));
+    double rightDistance = sqrt(pow(c._1-MOTOR_TO_ORIGIN), 2) + pow(c._2));
+
+    double theta1 = toDegrees(solveTriangle(leftDistance, 2*MOTOR_TO_ORIGIN, rightDistance));
+    double theta2 = toDegrees(solveTriangle(rightDistance, 2*MOTOR_TO_ORIGIN, leftDistance));
+    double omega1 = toDegrees(solveTriangle(MOTOR_ARM_LEN, leftDistance, PEN_ARM_LEN));
+    double omega2 = toDegrees(solveTriangle(MOTOR_ARM_LEN, rightDistance, PEN_ARM_LEN));
+
     return Coord(theta1 + omega1, theta2 + omega2);
 }
 
