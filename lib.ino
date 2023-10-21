@@ -65,7 +65,7 @@ coord calc_angles(coord c) {
   // cosine is bounded to [-1, 1] so if it's 
   // over 1 then something is very wrong
   if (alpha_calc._1 > 1 || alpha_calc._2 > 1){ 
-    exit(1);
+    // exit(1);
   }
 
   // use inverse cosine to calculate the angle
@@ -106,7 +106,7 @@ coord calc_position(coord theta) {
 
     // joint_distance can not be more than 2 times the pen arm length
     if (joint_distance > 2 * PEN_ARM_LEN) {
-        exit(1);
+        // exit(1);
     }
 
     double pen_deviation = sqrt(pow(PEN_ARM_LEN, 2) - pow(joint_distance / 2, 2));
