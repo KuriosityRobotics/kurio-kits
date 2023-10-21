@@ -23,5 +23,5 @@
 #define PEN_ARM_LEN 80
 
 // lifting servo positions
-#define PEN_UP 0
-#define PEN_DOWN 75
+#define PEN_UP 45
+#define PEN_DOWN 0
