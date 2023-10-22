@@ -96,12 +96,9 @@ void setAngles(coord theta) { // in degrees
 
   currentPosition = calc_position(theta);
 
-  // range between 1000 and 2000
-  l = (l / 180) * 1000 + 1000;
-  r = (r / 180) * 1000 + 1000;
-
-  left.writeMicroseconds(l); 
-  right.writeMicroseconds(r);
+  // for simple 180 degree servos, we can use write(theta)
+  left.write(l);
+  right.write(r);
 }
 
 void setAngles(double l, double r) {
