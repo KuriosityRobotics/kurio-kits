@@ -37,11 +37,11 @@ double solveTriangle(double a, double b, double c) {
 }
 
 coord calcAngles(coord c) {
-    double leftDistance = sqrt(pow(c._1+MOTOR_TO_ORIGIN), 2) + pow(c._2));
-    double rightDistance = sqrt(pow(c._1-MOTOR_TO_ORIGIN), 2) + pow(c._2));
+    double leftDistance = sqrt(pow(c._1 + MOTOR_TO_ORIGIN, 2) + pow(c._2, 2));
+    double rightDistance = sqrt(pow(c._1 - MOTOR_TO_ORIGIN, 2) + pow(c._2, 2));
 
-    double theta1 = toDegrees(solveTriangle(leftDistance, 2*MOTOR_TO_ORIGIN, rightDistance));
-    double theta2 = toDegrees(solveTriangle(rightDistance, 2*MOTOR_TO_ORIGIN, leftDistance));
+    double theta1 = toDegrees(solveTriangle(leftDistance, 2 * MOTOR_TO_ORIGIN, rightDistance));
+    double theta2 = toDegrees(solveTriangle(rightDistance, 2 * MOTOR_TO_ORIGIN, leftDistance));
     double omega1 = toDegrees(solveTriangle(MOTOR_ARM_LEN, leftDistance, PEN_ARM_LEN));
     double omega2 = toDegrees(solveTriangle(MOTOR_ARM_LEN, rightDistance, PEN_ARM_LEN));
 
@@ -83,6 +83,8 @@ coord calc_position(coord theta) {
 }
 
 void setAngles(coord theta) { // in degrees
+  Serial.println("setting angles: " + String(theta._1) + ", " + String(theta._2));
+
   // invert if necessary
   double l = INVERT_LEFT ? 180 - theta._1 : theta._1;
   double r = INVERT_RIGHT ? 180 - theta._2 : theta._2;
@@ -93,9 +95,12 @@ void setAngles(coord theta) { // in degrees
 
   currentPosition = calc_position(theta);
 
-  Serial.println("setting angles: " + String(l) + ", " + String(r));
-  left.write(l); 
-  right.write(r);
+  // range between 1000 and 2000
+  l = (l / 180) * 1000 + 1000;
+  r = (r / 180) * 1000 + 1000;
+
+  left.writeMicroseconds(l); 
+  right.writeMicroseconds(r);
 }
 
 void setAngles(double l, double r) {
@@ -117,11 +122,23 @@ bool getPenState(){
   return penLifted;
 }
 
+double clamp(double a, double min, double max){
+  return max(min, min(a, max));
+}
 
-void goTo(double x, double y){
+void goTo(double x, double y) {
+  // adjust offset to fit in whiteboard
+  double X_MIN = -60;
+  double X_MAX = 60;
+  double Y_MIN = 55;
+  double Y_MAX = 100;
+
+  x = clamp(x, X_MIN, X_MAX);
+  y = clamp(y, Y_MIN, Y_MAX);
+
   setAngles(calcAngles(Coord(x, y)));
-//  currentPosition._1 = x;
-//  currentPosition._2 = y;
+  //  currentPosition._1 = x;
+  //  currentPosition._2 = y;
 }
 
 void glideTo(double x, double y, double seconds) {

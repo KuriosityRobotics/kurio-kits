@@ -3,11 +3,16 @@
 void loop() {
   // penUp();
   // delay(1000);
-  // penDown();
-  goTo(0., 0.);
-  delay(1000);
-  goTo(3., 0.);
-  delay(1000);
+  // // penDown();
+  setAngles(135, 125);
+  // goTo(500, 2000);
+  // delay(1000);
+  // goTo(-500, 2000);
+  // delay(1000);
+  // goTo(-500, -2000);
+  // delay(1000);
+  // goTo(500, -2000);
+  // delay(1000);
   // goTo(10, 80);
   // goTo(-10, 80);
   // goTo(-10, 60);

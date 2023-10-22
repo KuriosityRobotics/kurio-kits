@@ -13,8 +13,8 @@
 #define INVERT_RIGHT false
 
 // Step 3: Tune the scale factor.
-#define L_SCALE 1.15
-#define R_SCALE 1.15
+#define L_SCALE 1.
+#define R_SCALE 1.
 
 // ---------- DO NOT EDIT BELOW THIS LINE ----------
 
