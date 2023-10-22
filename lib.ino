@@ -176,7 +176,6 @@ void setup() {
   right.attach(10);
   lift.attach(11);
 
-  // setAngles(90, 90);
   lift.write(0);
 
   Serial.begin(9600);
@@ -184,6 +183,6 @@ void setup() {
   Serial.println("L_OFFSET: " + String(L_OFFSET) + "\nR_OFFSET: " + String(R_OFFSET));
 
   // initialization sequence
-  penDown(); // lift pen 
-  // goTo(0, 0); // go to initial home position
+  penDown();
+  // goTo(0, 80); // go to initial home position
 }
