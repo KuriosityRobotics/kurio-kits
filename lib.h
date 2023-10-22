@@ -7,7 +7,7 @@ double toDegrees(double theta);
 
 void setAngles(double l, double r);
 
-struct coord;
+struct pair;
 
 void penUp();
 void penDown();
@@ -16,7 +16,7 @@ double getX();
 double getY();
 
 bool getPenState();
-coord getPos();
+pair getPos();
 
 void goTo(double x, double y);
 void glideTo(double x, double y, double seconds);

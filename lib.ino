@@ -4,13 +4,13 @@
 #include "lib.h"
 #include "Configuration.h"
 
-struct coord {
-  double _1;
-  double _2;
+struct pair {
+  double first;
+  double second;
 };
 
-struct coord Coord(double _1, double _2) {
-  struct coord c = { _1, _2 };
+struct pair Pair(double first, double second) {
+  struct pair c = { first, second };
   return c;
 }
 
@@ -28,7 +28,7 @@ Servo lift;
 
 bool penLifted = false;
 
-coord currentPosition = Coord(0, 80);
+pair currentPosition = Pair(0, 80);
 
 // solves angle opposite to Side c
 double solveTriangle(double a, double b, double c) {
@@ -36,9 +36,9 @@ double solveTriangle(double a, double b, double c) {
     return acos((c*c-a*a-b*b)/(-2*a*b));
 }
 
-coord calcAngles(coord c) {
-    double leftDistance = sqrt(pow(c._1 + MOTOR_TO_ORIGIN, 2) + pow(c._2, 2));
-    double rightDistance = sqrt(pow(c._1 - MOTOR_TO_ORIGIN, 2) + pow(c._2, 2));
+pair calcAngles(pair c) {
+    double leftDistance = sqrt(pow(c.first + MOTOR_TO_ORIGIN, 2) + pow(c.second, 2));
+    double rightDistance = sqrt(pow(c.first - MOTOR_TO_ORIGIN, 2) + pow(c.second, 2));
 
     double thetaLeft = solveTriangle(leftDistance, 2 * MOTOR_TO_ORIGIN, rightDistance);
     double omegaLeft = solveTriangle(MOTOR_ARM_LEN, leftDistance, PEN_ARM_LEN);
@@ -46,28 +46,28 @@ coord calcAngles(coord c) {
     double thetaRight = solveTriangle(rightDistance, 2 * MOTOR_TO_ORIGIN, leftDistance);
     double omegaRight = solveTriangle(MOTOR_ARM_LEN, rightDistance, PEN_ARM_LEN);
 
-    return Coord(toDegrees(theta1 + omega1), toDegrees(theta2 + omega2));
+    return Pair(toDegrees(theta1 + omega1), toDegrees(theta2 + omega2));
 }
 
-coord calc_position(coord theta) {
+pair calc_position(pair theta) {
     // convert to radians
-    struct coord theta_rad = Coord(
-        toRadians(theta._1),
-        toRadians(theta._2)
+    struct pair theta_rad = Pair(
+        toRadians(theta.first),
+        toRadians(theta.second)
     );
 
-    // calculate the coordinates of the joints
-    struct coord left_joint = Coord(
-        - MOTOR_TO_ORIGIN + cos(theta_rad._1) * MOTOR_ARM_LEN,
-        sin(theta_rad._1) * MOTOR_ARM_LEN
+    // calculate the pairinates of the joints
+    struct pair left_joint = Pair(
+        - MOTOR_TO_ORIGIN + cos(theta_rad.first) * MOTOR_ARM_LEN,
+        sin(theta_rad.first) * MOTOR_ARM_LEN
     );
-    struct coord right_joint = Coord(
-        MOTOR_TO_ORIGIN - cos(theta_rad._2) * MOTOR_ARM_LEN,
-        sin(theta_rad._2) * MOTOR_ARM_LEN
+    struct pair right_joint = Pair(
+        MOTOR_TO_ORIGIN - cos(theta_rad.second) * MOTOR_ARM_LEN,
+        sin(theta_rad.second) * MOTOR_ARM_LEN
     );
 
     // we treat left_joint to right-joint as a line segment, find the midpoint, and step left by a certain distance
-    double joint_distance = sqrt(pow(left_joint._1 - right_joint._1, 2) + pow(left_joint._2 - right_joint._2, 2));
+    double joint_distance = sqrt(pow(left_joint.first - right_joint.first, 2) + pow(left_joint.second - right_joint.second, 2));
 
     // joint_distance can not be more than 2 times the pen arm length
     if (joint_distance > 2 * PEN_ARM_LEN) {
@@ -77,18 +77,18 @@ coord calc_position(coord theta) {
     double pen_deviation = sqrt(pow(PEN_ARM_LEN, 2) - pow(joint_distance / 2, 2));
 
     // from the midpoint, we step left by pen_deviation
-    double pen_x = (left_joint._1 + right_joint._1) / 2 - pen_deviation * (right_joint._2 - left_joint._2) / joint_distance;
-    double pen_y = (left_joint._2 + right_joint._2) / 2 + pen_deviation * (right_joint._1 - left_joint._1) / joint_distance;
+    double pen_x = (left_joint.first + right_joint.first) / 2 - pen_deviation * (right_joint.second - left_joint.second) / joint_distance;
+    double pen_y = (left_joint.second + right_joint.second) / 2 + pen_deviation * (right_joint.first - left_joint.first) / joint_distance;
 
-    return Coord(pen_x, pen_y);
+    return Pair(pen_x, pen_y);
 }
 
-void setAngles(coord theta) { // in degrees
-  Serial.println("setting angles: " + String(theta._1) + ", " + String(theta._2));
+void setAngles(pair theta) { // in degrees
+  Serial.println("setting angles: " + String(theta.first) + ", " + String(theta.second));
 
   // invert if necessary
-  double l = INVERT_LEFT ? 180 - theta._1 : theta._1;
-  double r = INVERT_RIGHT ? 180 - theta._2 : theta._2;
+  double l = INVERT_LEFT ? 180 - theta.first : theta.first;
+  double r = INVERT_RIGHT ? 180 - theta.second : theta.second;
 
   // scale and offset
   l = (L_SCALE * (l - 90) + 90 + L_OFFSET);
@@ -102,7 +102,7 @@ void setAngles(coord theta) { // in degrees
 }
 
 void setAngles(double l, double r) {
-  setAngles(Coord(l, r));
+  setAngles(Pair(l, r));
 }
 
 void penUp() {
@@ -115,12 +115,12 @@ void penDown() {
   penLifted = false;
 }
 
-bool getPenState(){
+bool getPenState() {
   // true if lifted, false if lowered
   return penLifted;
 }
 
-double clamp(double a, double min, double max){
+double clamp(double a, double min, double max) {
   return max(min, min(a, max));
 }
 
@@ -134,9 +134,9 @@ void goTo(double x, double y) {
   x = clamp(x, X_MIN, X_MAX);
   y = clamp(y, Y_MIN, Y_MAX);
 
-  setAngles(calcAngles(Coord(x, y)));
-  //  currentPosition._1 = x;
-  //  currentPosition._2 = y;
+  setAngles(calcAngles(Pair(x, y)));
+  //  currentPosition.first = x;
+  //  currentPosition.second = y;
 }
 
 void glideTo(double x, double y, double seconds) {
@@ -145,25 +145,25 @@ void glideTo(double x, double y, double seconds) {
 
 void glideTo(double x, double y, double seconds, int interpSegments) {
   double startTime = millis();
-  coord startPos = currentPosition;
+  pair startPos = currentPosition;
   double endTime = startTime + seconds * double(interpSegments);
   while (millis() < endTime){
     double timePassed = millis() - startTime;
     double fractionMoved = timePassed/(seconds * double(interpSegments));
-    goTo(startPos._1 + fractionMoved * (x - startPos._1), startPos._2 + fractionMoved * (y - startPos._2));
+    goTo(startPos.first + fractionMoved * (x - startPos.first), startPos.second + fractionMoved * (y - startPos.second));
   }
   goTo(x, y);
 }
 
 double getX() {
-  return currentPosition._1;
+  return currentPosition.first;
 }
 
 double getY() {
-  return currentPosition._2;
+  return currentPosition.second;
 }
 
-coord getPos() {
+pair getPos() {
   return currentPosition;
 }
 
