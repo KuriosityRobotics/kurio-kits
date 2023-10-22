@@ -40,12 +40,12 @@ coord calcAngles(coord c) {
     double leftDistance = sqrt(pow(c._1 + MOTOR_TO_ORIGIN, 2) + pow(c._2, 2));
     double rightDistance = sqrt(pow(c._1 - MOTOR_TO_ORIGIN, 2) + pow(c._2, 2));
 
-    double theta1 = toDegrees(solveTriangle(leftDistance, 2 * MOTOR_TO_ORIGIN, rightDistance));
-    double theta2 = toDegrees(solveTriangle(rightDistance, 2 * MOTOR_TO_ORIGIN, leftDistance));
-    double omega1 = toDegrees(solveTriangle(MOTOR_ARM_LEN, leftDistance, PEN_ARM_LEN));
-    double omega2 = toDegrees(solveTriangle(MOTOR_ARM_LEN, rightDistance, PEN_ARM_LEN));
+    double theta1 = solveTriangle(leftDistance, 2 * MOTOR_TO_ORIGIN, rightDistance);
+    double theta2 = solveTriangle(rightDistance, 2 * MOTOR_TO_ORIGIN, leftDistance);
+    double omega1 = solveTriangle(MOTOR_ARM_LEN, leftDistance, PEN_ARM_LEN);
+    double omega2 = solveTriangle(MOTOR_ARM_LEN, rightDistance, PEN_ARM_LEN);
 
-    return Coord(theta1 + omega1, theta2 + omega2);
+    return Coord(toDegrees(theta1 + omega1), toDegrees(theta2 + omega2));
 }
 
 coord calc_position(coord theta) {
