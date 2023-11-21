@@ -46,7 +46,7 @@ pair calcAngles(pair c) {
     double thetaRight = solveTriangle(rightDistance, 2 * MOTOR_TO_ORIGIN, leftDistance);
     double omegaRight = solveTriangle(MOTOR_ARM_LEN, rightDistance, PEN_ARM_LEN);
 
-    return Pair(toDegrees(theta1 + omega1), toDegrees(theta2 + omega2));
+    return Pair(toDegrees(thetaLeft + omegaLeft), toDegrees(thetaRight + omegaRight));
 }
 
 pair calc_position(pair theta) {
