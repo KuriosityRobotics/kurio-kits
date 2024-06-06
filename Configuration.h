@@ -1,28 +1,32 @@
 // Configuration.h
-// This file contains a bunch of constants and things you need to tune.
+// Este archivo contiene un montón de constantes y cosas que necesitas ajustar
 
-// Step 1: Tune the 90-degree position using setAngles(90, 90); (degrees)
-#define L_OFFSET 2
-#define R_OFFSET 10
 
-// Step 2: Invert the necessary sides. When you run
-// setAngles(0,0), both servos should move inwards.
-// setAngles(180, 180), both servos should move outwards.
-// If they don't, flip the corresponding variable here.
-#define INVERT_LEFT true
-#define INVERT_RIGHT false
+// Paso 1: Invertir lo necesario. Cuando ejeecutas
+// setAngles(45,45), los dos servos deberían mover hacía afuera.
+// setAngles(90, 90), deberían mover hacía adentro.
+// Si no lo hacen, invierte el variable apropiado.
+#define INVERT_LEFT false
+#define INVERT_RIGHT true
 
-// Step 3: Tune the scale factor.
+// Paso 2: Probablemente no necesitas tocar esto, 
+// pero si cuando ejecutas setAngles(90,0), y un 
+// mano no es horizontal, cambia estos valores  para que sea horizontal.
 #define L_SCALE 1.
 #define R_SCALE 1.
 
-// ---------- DO NOT EDIT BELOW THIS LINE ----------
+// ---------- NO EDITAR DEBAJO DE ESTA LÍNEA ----------
 
-// robot geometry constants (millimeters)
+// Ángulos de las manos
+#define L_OFFSET 70
+#define R_OFFSET -70
+
+// Constantes de la geometría del robót (millimeters)
 #define MOTOR_TO_ORIGIN 23.25
 #define MOTOR_ARM_LEN 60
 #define PEN_ARM_LEN 80
 
-// lifting servo positions
+
+// Pocisiónes para levantar al marcador
 #define PEN_UP 45
 #define PEN_DOWN 0
